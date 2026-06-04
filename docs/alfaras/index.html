@@ -6,6 +6,15 @@
 <title>Alfaras — 体験を、形に。</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Serif+JP:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<!-- Three.js (3D宿泊券ビューア用) -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 
@@ -434,6 +443,73 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:2.5rem 3.
   .usecase-card h3{word-break:keep-all}
   .section-title{word-break:keep-all}
 }
+
+/* ===== Grid view toggle (mobile column switch) ===== */
+.grid-view-toggle{display:none;justify-content:flex-end;align-items:center;gap:0.45rem;margin-top:2rem}
+.gvt-label{font-family:'DM Mono',monospace;font-size:0.56rem;letter-spacing:0.14em;color:var(--gray);text-transform:uppercase;margin-right:0.15rem}
+.gvt-btn{display:inline-flex;align-items:center;gap:0.35rem;padding:0.45rem 0.7rem;background:transparent;border:1px solid var(--border2);color:var(--gray);font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.06em;cursor:pointer;transition:border-color 0.25s,color 0.25s}
+.gvt-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.6}
+.gvt-btn.active{border-color:var(--gold);color:var(--gold2)}
+
+/* ===== Listing detail page (3D voucher viewer) ===== */
+#detailPage{display:none;position:fixed;inset:0;z-index:520;background:var(--bg);overflow-y:auto}
+#detailPage.open{display:block}
+.dp-main{max-width:1280px;margin:0 auto;padding:3rem 3rem 5rem;display:grid;grid-template-columns:1fr 420px;gap:3.5rem;align-items:start}
+.dp-viewer-card{position:sticky;top:5rem;background:var(--card);border:1px solid var(--border);overflow:hidden}
+.dp-viewer-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,var(--gold),var(--teal));z-index:3}
+.dp-viewer{width:100%;height:60vh;min-height:360px;max-height:560px;position:relative;touch-action:none;background:radial-gradient(120% 120% at 50% 22%,#17243f 0%,#0b1220 72%);cursor:grab}
+.dp-viewer:active{cursor:grabbing}
+.dp-viewer canvas{display:block;outline:none}
+.dp-badge{position:absolute;top:1rem;left:1rem;z-index:4;padding:0.3rem 0.7rem;background:rgba(8,13,24,0.6);border:1px solid var(--border);color:var(--lightgray);font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;backdrop-filter:blur(4px)}
+.dp-hint{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.9rem;background:rgba(8,13,24,0.62);border:1px solid var(--border2);border-radius:999px;color:var(--lightgray);font-family:'DM Mono',monospace;font-size:0.56rem;letter-spacing:0.06em;backdrop-filter:blur(4px);pointer-events:none;transition:opacity 0.5s}
+.dp-hint svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.6}
+.dp-viewer-btns{position:absolute;top:1rem;right:1rem;z-index:4;display:flex;flex-direction:column;gap:0.5rem}
+.dp-vbtn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:rgba(8,13,24,0.6);border:1px solid var(--border2);color:var(--lightgray);cursor:pointer;backdrop-filter:blur(4px);transition:border-color 0.25s,color 0.25s}
+.dp-vbtn:hover{border-color:var(--gold);color:var(--gold2)}
+.dp-vbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7}
+.dp-vbtn.active{border-color:var(--gold);color:var(--gold2)}
+.dp-loading{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;color:var(--gray);font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;background:rgba(8,13,24,0.45)}
+.dp-loading.hidden{display:none}
+.dp-spinner{width:34px;height:34px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:dpspin 0.9s linear infinite}
+@keyframes dpspin{to{transform:rotate(360deg)}}
+.dp-info{display:flex;flex-direction:column}
+.dp-eyebrow{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:var(--teal);text-transform:uppercase;margin-bottom:0.8rem}
+.dp-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3rem);font-weight:300;color:var(--white);line-height:1.1;margin-bottom:0.7rem}
+.dp-loc{font-size:0.85rem;color:var(--gray);margin-bottom:1.6rem;display:flex;align-items:center;gap:0.5rem}
+.dp-loc svg{width:14px;height:14px;stroke:var(--gold);fill:none;stroke-width:1.6;flex-shrink:0}
+.dp-price{font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:400;color:var(--gold2)}
+.dp-price span{font-size:0.78rem;color:var(--gray);font-family:'DM Mono',monospace;margin-left:0.4rem}
+.dp-sep{height:1px;background:var(--border);margin:1.8rem 0}
+.dp-desc{font-size:0.86rem;color:var(--gray);line-height:2;margin-bottom:1.8rem}
+.dp-specs{display:flex;flex-direction:column}
+.dp-spec{display:flex;justify-content:space-between;gap:1rem;padding:0.7rem 0;border-bottom:1px solid var(--border2);font-size:0.82rem}
+.dp-spec-k{color:var(--gray);font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;flex-shrink:0}
+.dp-spec-v{color:var(--offwhite);text-align:right}
+.dp-cta-row{display:flex;gap:1rem;margin-top:2rem;flex-wrap:wrap}
+.dp-btn{flex:1;min-width:150px;text-align:center;padding:1rem 1.4rem;font-family:'DM Mono',monospace;font-size:0.66rem;letter-spacing:0.13em;text-transform:uppercase;cursor:pointer;text-decoration:none;transition:background 0.3s,transform 0.2s,border-color 0.3s,color 0.3s;border:1px solid var(--gold)}
+.dp-btn-primary{background:var(--gold);color:#08080F}
+.dp-btn-primary:hover{background:var(--gold2);transform:translateY(-2px)}
+.dp-btn-ghost{background:transparent;color:var(--gold2)}
+.dp-btn-ghost:hover{background:var(--gold-dim)}
+
+@media(max-width:960px){
+  .grid-view-toggle{display:flex}
+  .listing-grid.g1{grid-template-columns:1fr}
+  .listing-grid.g2{grid-template-columns:1fr 1fr;gap:0.7rem}
+  .listing-grid.g2 .listing-img{height:118px}
+  .listing-grid.g2 .listing-img-inner{font-size:1.7rem}
+  .listing-grid.g2 .listing-body{padding:0.85rem}
+  .listing-grid.g2 .listing-cat{font-size:0.5rem;margin-bottom:0.3rem}
+  .listing-grid.g2 .listing-title{font-size:0.98rem;margin-bottom:0.25rem}
+  .listing-grid.g2 .listing-loc{font-size:0.68rem;margin-bottom:0.5rem}
+  .listing-grid.g2 .listing-price{font-size:1.2rem}
+  .listing-grid.g2 .listing-price span{font-size:0.6rem}
+  .listing-grid.g2 .listing-footer{margin-top:0.6rem;padding-top:0.6rem;flex-direction:column;align-items:flex-start;gap:0.5rem}
+  .listing-grid.g2 .btn-view{width:100%;text-align:center;padding:0.5rem}
+  .dp-main{grid-template-columns:1fr;padding:1.5rem 1.1rem 4rem;gap:1.6rem}
+  .dp-viewer-card{position:static}
+  .dp-viewer{height:50vh;min-height:300px;max-height:none}
+}
 </style>
 </head>
 <body>
@@ -614,7 +690,18 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:2.5rem 3.
     </div>
 
     <!-- Listing Grid -->
-    <div class="listing-grid" id="listingGrid"></div>
+    <div class="grid-view-toggle" id="gridViewToggle">
+      <span class="gvt-label">表示</span>
+      <button class="gvt-btn" data-view="g2" onclick="setGridView('g2')" aria-label="2列で表示">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="7"/><rect x="14" y="4" width="7" height="7"/><rect x="3" y="13" width="7" height="7"/><rect x="14" y="13" width="7" height="7"/></svg>
+        2列
+      </button>
+      <button class="gvt-btn" data-view="g1" onclick="setGridView('g1')" aria-label="1列（横幅いっぱい）で表示">
+        <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="7"/><rect x="4" y="13" width="16" height="7"/></svg>
+        1列
+      </button>
+    </div>
+    <div class="listing-grid g2" id="listingGrid"></div>
   </div>
 </section>
 
@@ -1613,13 +1700,31 @@ function renderListings(){
         <div class="listing-price">¥${d.price.toLocaleString()}<span>/ NFT</span></div>
         <div class="listing-footer">
           <span class="listing-tag">${d.tag}</span>
-          <a href="#contact" class="btn-view">詳細を見る</a>
+          <a href="#" class="btn-view" onclick="openDetail(${d.id});return false;">詳細を見る</a>
         </div>
       </div>
     </div>
   `).join('');
 }
 renderListings();
+
+// ===== GRID VIEW (mobile column toggle) =====
+function setGridView(v){
+  const grid=document.getElementById('listingGrid');
+  if(!grid)return;
+  grid.classList.remove('g1','g2');
+  grid.classList.add(v);
+  document.querySelectorAll('.gvt-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  try{localStorage.setItem('alfaras_grid_view',v);}catch(e){}
+}
+(function initGridView(){
+  let v='g2';
+  try{v=localStorage.getItem('alfaras_grid_view')||'g2';}catch(e){}
+  setGridView(v);
+})();
+
+// 物件IDから情報を取得（3D詳細ページ用）
+window.getListing=function(id){return LISTINGS.find(x=>x.id===id);};
 
 // ===== RESET =====
 function resetSearch(){
@@ -1845,6 +1950,257 @@ function handleSubmit(e){
     <button onclick="closeResellPage()" style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--gray);background:none;border:none;cursor:none;letter-spacing:0.08em;transition:color 0.3s" onmouseover="this.style.color='var(--gold2)'" onmouseout="this.style.color='var(--gray)'">マーケットプレイスに戻る</button>
   </div>
 </div>
+
+<!-- ===== LISTING DETAIL PAGE (3D 宿泊券ビューア) ===== -->
+<div id="detailPage">
+  <!-- Nav -->
+  <div class="rp-nav">
+    <span class="rp-logo">Alfaras</span>
+    <button class="rp-back" onclick="closeDetail()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      マーケットプレイスに戻る
+    </button>
+  </div>
+
+  <div class="dp-main">
+    <!-- 3D viewer -->
+    <div class="dp-viewer-card">
+      <div class="dp-viewer" id="modelViewer">
+        <div class="dp-badge" id="dpBadge">3Dプレビュー</div>
+        <div class="dp-viewer-btns">
+          <button class="dp-vbtn active" id="dpAutoBtn" onclick="toggleAutoRotate()" title="自動回転の切り替え" aria-label="自動回転の切り替え">
+            <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+          </button>
+          <button class="dp-vbtn" onclick="resetView()" title="視点をリセット" aria-label="視点をリセット">
+            <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.5 15a9 9 0 1 0 .5-6"/></svg>
+          </button>
+        </div>
+        <div class="dp-hint" id="dpHint">
+          <svg viewBox="0 0 24 24"><path d="M9 11V6a2 2 0 0 1 4 0v5"/><path d="M5 11a2 2 0 0 1 4 0v2"/><path d="M5 13v3a6 6 0 0 0 12 0v-4a2 2 0 0 0-4 0"/></svg>
+          ドラッグで回転・ピンチ／ホイールで拡大
+        </div>
+        <div class="dp-loading" id="dpLoading"><div class="dp-spinner"></div>3Dモデルを読み込み中…</div>
+      </div>
+    </div>
+
+    <!-- info -->
+    <div class="dp-info">
+      <p class="dp-eyebrow" id="dpCat">Villa</p>
+      <h1 class="dp-title" id="dpTitle">—</h1>
+      <p class="dp-loc"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg><span id="dpLoc">—</span></p>
+      <div class="dp-price" id="dpPrice">¥—<span>/ NFT 宿泊券</span></div>
+      <div class="dp-sep"></div>
+      <p class="dp-desc">この宿泊券のNFTを3Dでご確認いただけます。画面を<strong style="color:var(--lightgray)">ドラッグで回転</strong>、<strong style="color:var(--lightgray)">ピンチ（PCはホイール）で拡大・縮小</strong>できます。スマートフォンでもなめらかに操作いただけます。</p>
+      <div class="dp-specs">
+        <div class="dp-spec"><span class="dp-spec-k">種別</span><span class="dp-spec-v" id="dpSpecCat">—</span></div>
+        <div class="dp-spec"><span class="dp-spec-k">エリア</span><span class="dp-spec-v" id="dpSpecLoc">—</span></div>
+        <div class="dp-spec"><span class="dp-spec-k">特徴</span><span class="dp-spec-v" id="dpSpecTag">—</span></div>
+        <div class="dp-spec"><span class="dp-spec-k">権利形態</span><span class="dp-spec-v">NFT会員権・宿泊券</span></div>
+        <div class="dp-spec"><span class="dp-spec-k">譲渡</span><span class="dp-spec-v">リセール出品可（手数料2%）</span></div>
+      </div>
+      <div class="dp-cta-row">
+        <a href="#contact" class="dp-btn dp-btn-primary" onclick="closeDetail()">購入・予約を相談する</a>
+        <a href="#" class="dp-btn dp-btn-ghost" onclick="closeDetail();openResellPage();return false;">この券を出品する</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== THREE.JS 3D VIEWER ===== -->
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+/* ──────────────────────────────────────────────────────────────
+   既定の3Dモデル(GLB)。
+   ・自社のモデルを使う場合：docs/alfaras/models/ にGLBを置き、下記を
+       const DEFAULT_MODEL_URL = 'models/あなたのモデル.glb';
+     に変更してください（models/README.txt 参照）。
+   ・物件ごとに変える場合：LISTINGS の各要素に  model:'models/xxx.glb'
+     を追加すると、その物件だけ別モデルを表示します。
+   ・読み込みに失敗した場合は、自動で簡易プレースホルダ3Dを表示します。
+   ──────────────────────────────────────────────────────────── */
+const DEFAULT_MODEL_URL = 'https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Assets@main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb';
+const CAT_NAMES = {hotel:'ホテル',villa:'ヴィラ',ryokan:'旅館',cottage:'貸別荘',vip:'VIP体験',membership:'会員権'};
+
+let renderer, scene, camera, controls, loader;
+let raf = null, currentModel = null;
+let inited = false, autoRotate = true, hintTimer = null;
+
+const $ = (id)=>document.getElementById(id);
+const viewerHost = ()=>$('modelViewer');
+
+function initThree(){
+  if(inited) return;
+  const host = viewerHost();
+  const w = host.clientWidth || 600, h = host.clientHeight || 400;
+
+  renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); // モバイル負荷対策
+  renderer.setSize(w, h);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  host.appendChild(renderer.domElement);
+
+  scene = new THREE.Scene();
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  camera = new THREE.PerspectiveCamera(45, w/h, 0.1, 1000);
+  camera.position.set(0, 0.5, 3.4);
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x223044, 0.55));
+  const key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(3, 5, 4); scene.add(key);
+  const rim = new THREE.DirectionalLight(0xC9A84C, 1.0); rim.position.set(-4, 2, -3); scene.add(rim);
+
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.enablePan = false;
+  controls.minDistance = 1.4;
+  controls.maxDistance = 10;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 1.1;
+  // スマホ：1本指で回転、2本指でピンチ拡大＋回転
+  controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE };
+  controls.addEventListener('start', ()=>{ hideHint(); controls.autoRotate = false; autoRotate = false; setAutoBtn(false); });
+
+  loader = new GLTFLoader();
+
+  new ResizeObserver(resize).observe(host);
+  window.addEventListener('orientationchange', ()=> setTimeout(resize, 300));
+  inited = true;
+}
+
+function resize(){
+  if(!renderer) return;
+  const host = viewerHost();
+  const w = host.clientWidth, h = host.clientHeight;
+  if(!w || !h) return;
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+}
+
+function disposeObj(obj){
+  obj.traverse(o=>{
+    if(o.geometry) o.geometry.dispose();
+    if(o.material){
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      mats.forEach(m=>{ for(const k in m){ const v = m[k]; if(v && v.isTexture) v.dispose(); } m.dispose(); });
+    }
+  });
+}
+function clearModel(){ if(currentModel){ scene.remove(currentModel); disposeObj(currentModel); currentModel = null; } }
+
+function frameModel(obj){
+  const box = new THREE.Box3().setFromObject(obj);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  obj.position.sub(center);                       // 原点に中心合わせ
+  const maxDim = Math.max(size.x, size.y, size.z) || 1;
+  obj.scale.setScalar(1.8 / maxDim);              // どんなGLBでも一定サイズに収める
+  const dist = 3.4;
+  controls.target.set(0, 0, 0);
+  camera.position.set(0, 0.4, dist);
+  controls.minDistance = dist * 0.45;
+  controls.maxDistance = dist * 3.0;
+  controls.update();
+}
+
+function showModel(obj){
+  clearModel();
+  currentModel = obj;
+  scene.add(obj);
+  frameModel(obj);
+  $('dpLoading').classList.add('hidden');
+}
+
+function loadModel(url){
+  const isSample = !url || url.includes('glTF-Sample-Assets');
+  $('dpBadge').textContent = isSample ? 'サンプル3D（差し替え可）' : '3Dプレビュー';
+  $('dpLoading').classList.remove('hidden');
+  if(!url){ showModel(makeVilla()); return; }
+  loader.load(url,
+    (gltf)=> showModel(gltf.scene),
+    undefined,
+    (err)=>{ console.warn('GLB load failed → placeholder:', err); $('dpBadge').textContent='サンプル3D（差し替え可）'; showModel(makeVilla()); }
+  );
+}
+
+// 高級ヴィラ風プレースホルダ（外部ファイル不要・常に表示可能）
+function makeVilla(){
+  const g = new THREE.Group();
+  const gold  = new THREE.MeshStandardMaterial({color:0xC9A84C, metalness:0.95, roughness:0.22});
+  const stone = new THREE.MeshStandardMaterial({color:0x1b2740, metalness:0.35, roughness:0.65});
+  const glass = new THREE.MeshStandardMaterial({color:0x0D9488, metalness:0.6, roughness:0.12, transparent:true, opacity:0.85});
+  const base = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.16, 1.5), gold);  base.position.y = -0.55; g.add(base);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.95, 1.15), stone); body.position.y = 0.0; g.add(body);
+  const win  = new THREE.Mesh(new THREE.BoxGeometry(1.93, 0.42, 1.17), glass); win.position.y = 0.06; g.add(win);
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(2.15, 0.1, 1.32), gold);  roof.position.y = 0.53; g.add(roof);
+  const poolGeo = new THREE.BoxGeometry(0.7, 0.04, 1.0);
+  const pool = new THREE.Mesh(poolGeo, glass); pool.position.set(1.45, -0.45, 0); g.add(pool);
+  return g;
+}
+
+function animate(){
+  raf = requestAnimationFrame(animate);
+  if(controls) controls.update();
+  if(renderer && scene && camera) renderer.render(scene, camera);
+}
+function startLoop(){ if(!raf) animate(); }
+function stopLoop(){ if(raf){ cancelAnimationFrame(raf); raf = null; } }
+
+function hideHint(){ const h = $('dpHint'); if(h) h.style.opacity = '0'; }
+function setAutoBtn(on){ const b = $('dpAutoBtn'); if(b) b.classList.toggle('active', on); }
+
+/* ===== public API (inline onclick から呼ぶ) ===== */
+window.openDetail = function(id){
+  const d = (window.getListing && window.getListing(id)) || {title:'宿泊券', loc:'—', cat:'villa', price:0, tag:'—'};
+  $('dpCat').textContent     = CAT_NAMES[d.cat] || d.cat || '';
+  $('dpTitle').textContent   = d.title || '—';
+  $('dpLoc').textContent     = d.loc || '—';
+  $('dpPrice').innerHTML     = '¥' + (d.price||0).toLocaleString() + '<span>/ NFT 宿泊券</span>';
+  $('dpSpecCat').textContent = CAT_NAMES[d.cat] || d.cat || '—';
+  $('dpSpecLoc').textContent = d.loc || '—';
+  $('dpSpecTag').textContent = d.tag || '—';
+
+  const p = $('detailPage');
+  p.classList.add('open');
+  p.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+
+  const h = $('dpHint'); if(h) h.style.opacity = '1';
+  clearTimeout(hintTimer); hintTimer = setTimeout(hideHint, 4500);
+
+  requestAnimationFrame(()=>{
+    initThree();
+    resize();
+    controls.autoRotate = true; autoRotate = true; setAutoBtn(true);
+    startLoop();
+    loadModel(d.model || DEFAULT_MODEL_URL);
+  });
+};
+window.closeDetail = function(){
+  const p = $('detailPage'); if(p) p.classList.remove('open');
+  document.body.style.overflow = '';
+  stopLoop();
+};
+window.toggleAutoRotate = function(){
+  if(!controls) return;
+  autoRotate = !autoRotate; controls.autoRotate = autoRotate; setAutoBtn(autoRotate);
+};
+window.resetView = function(){
+  if(!currentModel) return;
+  frameModel(currentModel);
+  controls.autoRotate = true; autoRotate = true; setAutoBtn(true);
+};
+window.addEventListener('keydown', e=>{
+  if(e.key === 'Escape'){ const p = $('detailPage'); if(p && p.classList.contains('open')) window.closeDetail(); }
+});
+</script>
 
 </body>
 </html>
