@@ -1,22 +1,24 @@
 【3Dモデル（GLB）の置き場所】
 
-宿泊券詳細ページの3Dビューアで表示するモデル（.glb 形式）をこのフォルダに置きます。
+宿泊券詳細ページの3Dビューアについて。
 
-■ 全物件で同じモデルを使う場合
-  1) このフォルダ（docs/alfaras/models/）に GLB ファイルを置く
-       例： docs/alfaras/models/villa.glb
-  2) docs/alfaras/index.html の中ほどにある
-       const DEFAULT_MODEL_URL = '...';
-     を次のように書き換える
-       const DEFAULT_MODEL_URL = 'models/villa.glb';
+■ 既定の表示（GLB不要）
+  既定では「そのヴィラの写真」をテクスチャに使った3Dの宿泊券カードを表示します。
+  （写真はALFARASの各物件カードと同じものを自動使用するので、設定は不要です）
 
-■ 物件ごとに別のモデルを使う場合
-  index.html 内の LISTINGS 配列で、対象物件に model を追加する
-       { id:12, cat:'villa', title:'...', ..., model:'models/villa-12.glb' }
+■ 本格的な3Dモデル（.glb）を使いたい場合
+  ・全物件で同じモデル：
+      1) このフォルダ（docs/alfaras/models/）に GLB を置く（例：villa.glb）
+      2) index.html 内の  const DEFAULT_MODEL_URL = '';  を
+         const DEFAULT_MODEL_URL = 'models/villa.glb';  に変更
+  ・物件ごとに変える：
+      index.html 内の LISTINGS で対象物件に model を追加
+        { id:12, cat:'villa', title:'...', ..., model:'models/villa-12.glb' }
+
+■ フォールバック
+  GLBの読込に失敗した場合 → 写真カード → 簡易プレースホルダ（ヴィラ風3D）
+  の順に自動で切り替わるため、画面が真っ白になることはありません。
 
 ■ 補足
-  ・初期状態では、確認用に外部CDNのサンプルGLBを読み込みます。
-  ・GLBが見つからない／読み込みに失敗した場合は、自動で簡易プレースホルダ
-    （ヴィラ風の3D）を表示するので、画面が真っ白になることはありません。
-  ・glTF(.gltf + .bin + テクスチャ)よりも、1ファイルにまとまった .glb 形式を推奨します。
-  ・スマホ表示も考慮し、なるべく軽量（数MB以内・テクスチャ2K程度）のモデルが快適です。
+  ・glTF(.gltf+.bin+テクスチャ)より、1ファイルにまとまった .glb 形式を推奨。
+  ・スマホ表示も考慮し、数MB以内・テクスチャ2K程度の軽量モデルが快適です。
